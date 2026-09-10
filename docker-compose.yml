@@ -7,7 +7,7 @@ services:
     volumes:
       - ./backend:/var/www/html
     depends_on:
-      - mysql
+      - postgres
     networks:
       - team-chat
 
@@ -24,18 +24,35 @@ services:
     networks:
       - team-chat
 
-  mysql:
-    image: mysql:8.0
-    container_name: team-chat-mysql
+  postgres:
+    image: postgres:16
+    container_name: team-chat-postgres
     environment:
-      MYSQL_DATABASE: team_chat
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: laravel
+      POSTGRES_DB: team_chat
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: laravel
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U laravel -d team_chat"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - team-chat
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: team-chat-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@team-chat.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8081:80"
+    depends_on:
+      - postgres
     networks:
       - team-chat
 
@@ -59,4 +76,4 @@ networks:
     driver: bridge
 
 volumes:
-  mysql-data:
+  postgres-data:
