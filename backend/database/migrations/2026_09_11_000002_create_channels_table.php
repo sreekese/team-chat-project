@@ -11,16 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('workspaces', function (Blueprint $table) {
+        Schema::create('channels', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('workspace_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('slug')->unique();
+            $table->string('slug');
+            $table->enum('type', ['public', 'private', 'dm'])->default('public');
             $table->text('description')->nullable();
-            $table->string('logo_path')->nullable();
-            $table->jsonb('settings')->default('{}');
-            $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unique(['workspace_id', 'slug']);
+            $table->index(['workspace_id', 'type']);
         });
     }
 
@@ -29,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('workspaces');
+        Schema::dropIfExists('channels');
     }
 };
