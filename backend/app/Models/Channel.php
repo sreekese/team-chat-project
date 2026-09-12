@@ -4,13 +4,24 @@ namespace App\Models;
 
 use App\Enums\ChannelType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 #[Fillable(['workspace_id', 'name', 'slug', 'type', 'description', 'created_by'])]
 class Channel extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Channel $channel) {
+            if (empty($channel->slug)) {
+                $channel->slug = Str::of($channel->name)->slug('-')->limit(60)->append('-'.Str::lower(Str::random(6)));
+            }
+        });
+    }
 
     protected function casts(): array
     {

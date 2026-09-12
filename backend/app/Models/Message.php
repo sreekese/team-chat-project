@@ -4,13 +4,14 @@ namespace App\Models;
 
 use App\Enums\MessageType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['workspace_id', 'channel_id', 'user_id', 'parent_id', 'type', 'body', 'edited_at'])]
 class Message extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

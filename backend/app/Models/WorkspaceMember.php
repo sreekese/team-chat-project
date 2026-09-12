@@ -4,11 +4,14 @@ namespace App\Models;
 
 use App\Enums\WorkspaceMemberRole;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(['workspace_id', 'user_id', 'role'])]
 class WorkspaceMember extends Model
 {
+    use HasFactory;
+
     protected function casts(): array
     {
         return [

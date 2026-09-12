@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -10,7 +11,7 @@ use Illuminate\Support\Str;
 #[Fillable(['name', 'slug', 'description', 'logo_path', 'settings', 'owner_id'])]
 class Workspace extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected static function booted(): void
     {
