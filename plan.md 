@@ -1,0 +1,27 @@
+3.2 Folder structure
+
+src/
+  api/            (use fetch, API call functions)
+  components/     (reusable UI: Button, Avatar, MessageBubble, etc.)
+  pages/          (Login, Register, Workspace, Channel)
+  context/        (AuthContext, WorkspaceContext)
+  hooks/          (useAuth, useChannel, useMessages)
+  App.jsx
+  main.jsx
+
+
+  3.3 Set up API client with auth
+
+
+
+Points to your Laravel API base URL
+Attaches the Sanctum token to headers automatically
+Handles 401s (redirect to login)
+3.4 Build pages in this order
+Login/Register pages — connect to Sanctum endpoints, store token
+Workspace list/create page — after login, show/create workspaces
+Channel sidebar — list channels in the selected workspace
+Message view — list messages in selected channel (plain fetch, no real-time yet), input box to post new message
+DM view — same pattern, for 1:1 messages
+
+Milestone check: you can log in, pick a workspace, click a channel, see messages, post a new message, and it appears after a manual refresh. No real-time yet — that's intentional, get this rock solid first.
