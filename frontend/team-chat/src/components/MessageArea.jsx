@@ -1,11 +1,13 @@
 import { forwardRef, useCallback, useImperativeHandle, useState } from 'react'
+import { useE2EE } from '../context/E2EEContext'
+import { useToast } from '../context/ToastContext'
 import { useMessages } from '../hooks/useMessages'
 import { MessageComposer } from './MessageComposer'
 import { MessageList } from './MessageList'
 import { ThreadView } from './ThreadView'
 
 export const MessageArea = forwardRef(function MessageArea(
-  { workspaceId, channelId, currentUserId },
+  { workspaceId, channelId, currentUserId, typingNames = [], onTyping, recipients = [] },
   ref,
 ) {
   const {
@@ -20,21 +22,41 @@ export const MessageArea = forwardRef(function MessageArea(
     remove,
     loadOlder,
   } = useMessages(workspaceId, channelId)
-
+  const { encrypt } = useE2EE()
   const [threadParent, setThreadParent] = useState(null)
+  const { toast } = useToast()
 
   const safeReact = useCallback(
     (messageId, emoji) => {
-      react(messageId, emoji).catch(() => {})
+      react(messageId, emoji).catch((e) => toast.error(e.message))
     },
-    [react],
+    [react, toast],
   )
 
   const safeRemove = useCallback(
     (messageId) => {
-      remove(messageId).catch(() => {})
+      remove(messageId).catch((e) => toast.error(e.message))
     },
-    [remove],
+    [remove, toast],
+  )
+
+  const safeSend = useCallback(
+    async (payload) => {
+      try {
+        return await send(payload, {
+          recipients,
+          selfId: currentUserId,
+          encrypt,
+          onEncryptionFallback: () => {
+            toast.info('Sent without encryption because a recipient has not set it up yet.')
+          },
+        })
+      } catch (e) {
+        toast.error(e.message)
+        return null
+      }
+    },
+    [send, recipients, currentUserId, encrypt, toast],
   )
 
   useImperativeHandle(
@@ -58,13 +80,20 @@ export const MessageArea = forwardRef(function MessageArea(
         />
 
         {error && (
-          <p className="border-t border-slate-200 px-4 py-2 text-center text-xs text-rose-600">
+          <p className="border-t border-line px-4 py-2 text-center text-xs text-rose-600">
             {error}
           </p>
         )}
 
-        <div className={threadParent ? 'border-t border-slate-200' : ''}>
-          <MessageComposer onSend={send} sending={sending} />
+        {typingNames.length > 0 && (
+          <p className="px-4 py-1 text-xs font-medium text-ink-soft">
+            {typingNames.join(', ')}{' '}
+            {typingNames.length === 1 ? 'is' : 'are'} typing…
+          </p>
+        )}
+
+        <div className={threadParent ? 'border-t border-line' : ''}>
+          <MessageComposer onSend={safeSend} sending={sending} onTyping={onTyping} />
         </div>
       </div>
 
@@ -75,6 +104,7 @@ export const MessageArea = forwardRef(function MessageArea(
           workspaceId={workspaceId}
           channelId={channelId}
           currentUserId={currentUserId}
+          recipients={recipients}
           onClose={() => setThreadParent(null)}
           onReact={safeReact}
           onDelete={safeRemove}

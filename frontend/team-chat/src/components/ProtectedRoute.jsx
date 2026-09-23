@@ -8,7 +8,7 @@ export function ProtectedRoute() {
   if (initializing) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-slate-500">
+        <div className="flex flex-col items-center gap-3 text-ink-soft">
           <Spinner size="lg" />
           <p className="text-sm">Loading...</p>
         </div>

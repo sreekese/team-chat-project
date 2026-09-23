@@ -1,6 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { messageApi } from '../api/endpoints'
+import { E2eeError } from '../crypto/e2ee'
 import { appendMessage, sortedMessages } from '../utils/format'
+
+function canSendPlaintextFallback(error) {
+  return (
+    error instanceof E2eeError &&
+    [
+      'A member has not set up encryption yet',
+      'No other members have set up encryption yet',
+      'No recipients with encryption keys',
+    ].includes(error.message)
+  )
+}
 
 export function useMessages(workspaceId, channelId) {
   const [messages, setMessages] = useState([])
@@ -52,18 +64,36 @@ export function useMessages(workspaceId, channelId) {
   }, [workspaceId, channelId, fetchPage, applyPage])
 
   const send = useCallback(
-    async ({ body, type, parentId, attachment }) => {
+    async (
+      { body, type, parentId, attachment },
+      { recipients = [], selfId, encrypt, onEncryptionFallback } = {},
+    ) => {
       if (!workspaceId || !channelId) return null
       const hasText = body && body.trim()
       if (!hasText && !attachment) return null
       setSending(true)
       try {
-        const msg = await messageApi.send(workspaceId, channelId, {
-          body: body?.trim(),
-          type,
-          parentId,
-          attachment,
-        })
+        let payload
+        if (hasText && typeof encrypt === 'function') {
+          try {
+            const envelope = await encrypt({
+              text: body.trim(),
+              recipients,
+              selfId,
+            })
+            payload = { type, parentId, attachment, ...envelope }
+          } catch (err) {
+            if (!canSendPlaintextFallback(err)) {
+              throw err
+            }
+            onEncryptionFallback?.(err)
+            payload = { body: body.trim(), type, parentId, attachment }
+          }
+        } else {
+          payload = { body: hasText ? body.trim() : undefined, type, parentId, attachment }
+        }
+
+        const msg = await messageApi.send(workspaceId, channelId, payload)
         if (msg) {
           setMessages((prev) => appendMessage(prev, msg))
         }

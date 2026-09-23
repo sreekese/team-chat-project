@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['workspace_id', 'channel_id', 'user_id', 'parent_id', 'type', 'body', 'edited_at'])]
+#[Fillable(['workspace_id', 'channel_id', 'user_id', 'parent_id', 'type', 'body', 'encrypted_body', 'body_iv', 'edited_at'])]
 class Message extends Model
 {
     use HasFactory, SoftDeletes;
@@ -49,6 +49,11 @@ class Message extends Model
     public function attachments()
     {
         return $this->hasMany(MessageAttachment::class);
+    }
+
+    public function keyWraps()
+    {
+        return $this->hasMany(MessageKeyWrap::class);
     }
 
     public function reactions()

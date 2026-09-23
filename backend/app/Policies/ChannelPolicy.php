@@ -30,6 +30,7 @@ class ChannelPolicy
 
         return ChannelMember::where('channel_id', $channel->id)
             ->where('user_id', $user->id)
+            ->where('status', 'active')
             ->exists();
     }
 
@@ -48,6 +49,25 @@ class ChannelPolicy
     {
         return WorkspaceMember::where('workspace_id', $workspace->id)
             ->where('user_id', $user->id)
+            ->exists();
+    }
+
+    public function delete(User $user, Channel $channel): bool
+    {
+        if ($channel->type->value === ChannelType::Dm->value) {
+            return false;
+        }
+        return $channel->created_by === $user->id;
+    }
+
+    public function leave(User $user, Channel $channel): bool
+    {
+        if ($channel->type->value !== ChannelType::Dm->value) {
+            return false;
+        }
+        return ChannelMember::where('channel_id', $channel->id)
+            ->where('user_id', $user->id)
+            ->where('status', 'active')
             ->exists();
     }
 }

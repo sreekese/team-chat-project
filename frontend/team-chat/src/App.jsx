@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { ChannelView } from './pages/ChannelView'
+import { DirectMessages } from './pages/DirectMessages'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
 import { Workspaces } from './pages/Workspaces'
@@ -19,6 +20,8 @@ function App() {
           path="/workspaces/:workspaceId/channels/:channelId"
           element={<ChannelView />}
         />
+        <Route path="/messages" element={<DirectMessages />} />
+        <Route path="/messages/:channelId" element={<DirectMessages />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

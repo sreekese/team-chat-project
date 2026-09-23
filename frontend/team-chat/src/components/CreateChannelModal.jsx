@@ -3,12 +3,14 @@ import { Button } from './Button'
 import { ErrorMessage } from './ErrorMessage'
 import { Input } from './Input'
 import { Modal } from './Modal'
+import { useToast } from '../context/ToastContext'
 
 export function CreateChannelModal({ open, onClose, onCreate }) {
   const [name, setName] = useState('')
   const [type, setType] = useState('public')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+  const { toast } = useToast()
 
   const reset = () => {
     setName('')
@@ -28,6 +30,7 @@ export function CreateChannelModal({ open, onClose, onCreate }) {
       return channel
     } catch (err) {
       setError(err.message)
+      toast.error(err.message || 'Could not create channel')
     } finally {
       setSubmitting(false)
     }
@@ -45,11 +48,11 @@ export function CreateChannelModal({ open, onClose, onCreate }) {
           autoFocus
         />
         <div>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-ink-body">
             Channel type
           </label>
           <div className="mt-1.5 flex gap-3">
-            <label className="flex items-center gap-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 text-sm text-ink-body">
               <input
                 type="radio"
                 name="channel-type"
@@ -57,9 +60,9 @@ export function CreateChannelModal({ open, onClose, onCreate }) {
                 checked={type === 'public'}
                 onChange={() => setType('public')}
               />
-              <span className="rounded bg-slate-100 px-1.5">#</span> Public
+              <span className="rounded bg-surface-mute px-1.5">#</span> Public
             </label>
-            <label className="flex items-center gap-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 text-sm text-ink-body">
               <input
                 type="radio"
                 name="channel-type"

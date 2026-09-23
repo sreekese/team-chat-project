@@ -13,7 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'username', 'email', 'password', 'avatar_path', 'status', 'last_seen_at'])]
+#[Fillable(['name', 'username', 'email', 'password', 'avatar_path', 'status', 'last_seen_at', 'identity_public_key', 'encryption_public_key', 'encryption_key_signature'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -51,7 +51,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Channel::class, 'channel_members')
             ->withTimestamps()
-            ->withPivot(['role', 'last_read_at']);
+            ->withPivot(['role', 'status', 'last_read_at']);
     }
 
     public function messages()

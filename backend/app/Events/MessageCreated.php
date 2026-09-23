@@ -29,6 +29,6 @@ class MessageCreated implements ShouldBroadcastNow
 
     public function broadcastWith(): array
     {
-        return ['message' => (new MessageResource($this->message->load('user')))->resolve()];
+        return ['message' => (new MessageResource($this->message->load(['user', 'keyWraps'])))->resolve()];
     }
 }

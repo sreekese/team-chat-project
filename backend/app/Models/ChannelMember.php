@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Enums\ChannelMemberRole;
+use App\Enums\ChannelMemberStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['channel_id', 'user_id', 'role', 'last_read_at'])]
+#[Fillable(['channel_id', 'user_id', 'role', 'status', 'last_read_at'])]
 class ChannelMember extends Model
 {
     use HasFactory;
@@ -16,6 +17,7 @@ class ChannelMember extends Model
     {
         return [
             'role' => ChannelMemberRole::class,
+            'status' => ChannelMemberStatus::class,
             'last_read_at' => 'datetime',
         ];
     }
