@@ -54,6 +54,6 @@ class Channel extends Model
     {
         return $this->belongsToMany(User::class, 'channel_members')
             ->withTimestamps()
-            ->withPivot(['role', 'last_read_at']);
+            ->withPivot(['role', 'status', 'last_read_at']);
     }
 }

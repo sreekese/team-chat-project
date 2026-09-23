@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\ChannelMemberRole;
+use App\Enums\ChannelMemberStatus;
 use App\Models\Channel;
 use App\Models\ChannelMember;
 use App\Models\User;
@@ -21,6 +22,7 @@ class ChannelMemberFactory extends Factory
             'channel_id' => Channel::factory(),
             'user_id' => User::factory(),
             'role' => ChannelMemberRole::Member,
+            'status' => ChannelMemberStatus::Active,
         ];
     }
 }

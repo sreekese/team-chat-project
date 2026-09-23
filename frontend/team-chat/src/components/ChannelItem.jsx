@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 function ChannelIcon({ type }) {
   if (type === 'dm') {
     return (
@@ -21,24 +23,76 @@ function ChannelIcon({ type }) {
   )
 }
 
-export function ChannelItem({ channel, active, unread = 0, onClick }) {
+export function ChannelItem({ channel, active, unread = 0, onClick, currentUserId, onRemove, onLeave }) {
+  const isOwner = channel.created_by === currentUserId
+  const isDm = channel.type === 'dm'
+  const [showAction, setShowAction] = useState(false)
+
+  const handleRemove = (e) => {
+    e.stopPropagation()
+    if (window.confirm(`Delete "${channel.name}"? This cannot be undone.`)) {
+      onRemove?.(channel.id)
+    }
+    setShowAction(false)
+  }
+
+  const handleLeave = (e) => {
+    e.stopPropagation()
+    if (window.confirm(`Leave "${channel.name}"? You will no longer receive messages.`)) {
+      onLeave?.(channel.id)
+    }
+    setShowAction(false)
+  }
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm font-medium transition-colors ${
-        active
-          ? 'bg-sidebar-active text-white'
-          : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'
-      }`}
-    >
-      <ChannelIcon type={channel.type} />
-      <span className="truncate flex-1">{channel.name}</span>
-      {unread > 0 && (
-        <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-sidebar">
-          {unread > 99 ? '99+' : unread}
-        </span>
+    <div className="relative group" onMouseEnter={() => setShowAction(true)} onMouseLeave={() => setShowAction(false)}>
+      <button
+        type="button"
+        onClick={onClick}
+        className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm font-medium transition-colors ${
+          active
+            ? 'bg-sidebar-active text-white'
+            : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'
+        }`}
+      >
+        <ChannelIcon type={channel.type} />
+        <span className="truncate flex-1">{channel.name}</span>
+        {unread > 0 && (
+          <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-sidebar">
+            {unread > 99 ? '99+' : unread}
+          </span>
+        )}
+      </button>
+      {showAction && (
+        <>
+          {!isDm && isOwner && onRemove && (
+            <button
+              type="button"
+              onClick={handleRemove}
+              className="absolute right-1 top-1/2 -translate-y-1/2 rounded p-1 text-slate-500 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Delete channel"
+              aria-label={`Delete ${channel.name}`}
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+              </svg>
+            </button>
+          )}
+          {isDm && onLeave && (
+            <button
+              type="button"
+              onClick={handleLeave}
+              className="absolute right-1 top-1/2 -translate-y-1/2 rounded p-1 text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Leave conversation"
+              aria-label={`Leave ${channel.name}`}
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+              </svg>
+            </button>
+          )}
+        </>
       )}
-    </button>
+    </div>
   )
 }

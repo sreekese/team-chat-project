@@ -3,7 +3,7 @@ export function ErrorMessage({ message, className = '' }) {
   return (
     <div
       role="alert"
-      className={`rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 ${className}`}
+      className={`rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-300 ${className}`}
     >
       {message}
     </div>

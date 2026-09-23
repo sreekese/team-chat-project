@@ -45,6 +45,80 @@ class MessageApiTest extends TestCase
         $this->assertDatabaseHas('messages', ['channel_id' => $channel->id, 'body' => 'Hello world']);
     }
 
+    public function test_member_can_send_encrypted_message_to_public_channel_readers(): void
+    {
+        $sender = User::factory()->create();
+        $peer = User::factory()->create();
+        $outsider = User::factory()->create();
+        $workspace = Workspace::factory()->create();
+        $channel = Channel::factory()->create(['workspace_id' => $workspace->id]);
+
+        WorkspaceMember::factory()->create([
+            'workspace_id' => $workspace->id,
+            'user_id' => $sender->id,
+            'role' => WorkspaceMemberRole::Member,
+        ]);
+        WorkspaceMember::factory()->create([
+            'workspace_id' => $workspace->id,
+            'user_id' => $peer->id,
+            'role' => WorkspaceMemberRole::Member,
+        ]);
+
+        $wraps = [
+            [
+                'user_id' => $sender->id,
+                'ephemeral_public_key' => 'sender-ephemeral',
+                'wrapped_key' => 'sender-wrapped',
+                'wrap_iv' => 'sender-iv',
+            ],
+            [
+                'user_id' => $peer->id,
+                'ephemeral_public_key' => 'peer-ephemeral',
+                'wrapped_key' => 'peer-wrapped',
+                'wrap_iv' => 'peer-iv',
+            ],
+            [
+                'user_id' => $outsider->id,
+                'ephemeral_public_key' => 'outsider-ephemeral',
+                'wrapped_key' => 'outsider-wrapped',
+                'wrap_iv' => 'outsider-iv',
+            ],
+        ];
+
+        $response = $this->actingAs($sender)->postJson("/api/workspaces/{$workspace->id}/channels/{$channel->id}/messages", [
+            'encrypted_body' => 'ciphertext',
+            'body_iv' => 'message-iv',
+            'key_wraps' => json_encode($wraps),
+        ])->assertCreated()
+            ->assertJsonPath('data.body', null)
+            ->assertJsonPath('data.encrypted_body', 'ciphertext')
+            ->assertJsonCount(2, 'data.key_wraps');
+
+        $messageId = $response->json('data.id');
+
+        $this->assertDatabaseHas('messages', [
+            'id' => $messageId,
+            'channel_id' => $channel->id,
+            'body' => null,
+            'encrypted_body' => 'ciphertext',
+            'body_iv' => 'message-iv',
+        ]);
+        $this->assertDatabaseHas('message_key_wraps', [
+            'message_id' => $messageId,
+            'user_id' => $sender->id,
+            'wrapped_key' => 'sender-wrapped',
+        ]);
+        $this->assertDatabaseHas('message_key_wraps', [
+            'message_id' => $messageId,
+            'user_id' => $peer->id,
+            'wrapped_key' => 'peer-wrapped',
+        ]);
+        $this->assertDatabaseMissing('message_key_wraps', [
+            'message_id' => $messageId,
+            'user_id' => $outsider->id,
+        ]);
+    }
+
     public function test_non_member_cannot_send_message_to_private_channel(): void
     {
         $user = User::factory()->create();

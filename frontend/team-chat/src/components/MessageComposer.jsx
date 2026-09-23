@@ -2,10 +2,16 @@ import { useRef, useState } from 'react'
 import { Button } from './Button'
 import { formatBytes } from '../utils/format'
 
-export function MessageComposer({ onSend, sending, placeholder = 'Message' }) {
+export function MessageComposer({
+  onSend,
+  sending,
+  onTyping,
+  placeholder = 'Message',
+}) {
   const [text, setText] = useState('')
   const [file, setFile] = useState(null)
   const fileInputRef = useRef(null)
+  const lastTypingSent = useRef(0)
 
   const canSend = (text.trim() || file) && !sending
 
@@ -26,17 +32,29 @@ export function MessageComposer({ onSend, sending, placeholder = 'Message' }) {
     }
   }
 
+  const handleChange = (e) => {
+    const value = e.target.value
+    setText(value)
+    if (value.trim() && typeof onTyping === 'function') {
+      const now = Date.now()
+      if (now - lastTypingSent.current > 2000) {
+        lastTypingSent.current = now
+        onTyping()
+      }
+    }
+  }
+
   return (
-    <div className="border-t border-slate-200 bg-chat px-4 py-3">
+    <div className="border-t border-line bg-chat px-4 py-3">
       <div className="mx-auto max-w-3xl">
-        <div className="overflow-hidden rounded border border-slate-300 bg-white shadow-sm focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/30">
+        <div className="overflow-hidden rounded border border-line-strong bg-surface shadow-sm focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/30">
           <textarea
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleChange}
             onKeyDown={onKeyDown}
             rows={2}
             placeholder={placeholder}
-            className="block w-full resize-none px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
+            className="block w-full resize-none bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-mute focus:outline-none"
           />
 
           <div className="flex items-center justify-between gap-2 px-2 py-1.5">
@@ -52,8 +70,8 @@ export function MessageComposer({ onSend, sending, placeholder = 'Message' }) {
                 onClick={() => fileInputRef.current?.click()}
                 className={`flex items-center gap-1.5 rounded px-2 py-1.5 text-xs font-semibold transition-colors ${
                   file
-                    ? 'bg-slate-100 text-slate-700'
-                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                    ? 'bg-surface-mute text-ink-body'
+                    : 'text-ink-soft hover:bg-surface-mute hover:text-ink-body'
                 }`}
                 title="Attach a file"
               >
@@ -67,7 +85,7 @@ export function MessageComposer({ onSend, sending, placeholder = 'Message' }) {
                 {file ? file.name : 'Attach'}
               </button>
               {file && (
-                <span className="max-w-[180px] truncate text-xs text-slate-500">
+                <span className="max-w-[180px] truncate text-xs text-ink-soft">
                   ({formatBytes(file.size)})
                 </span>
               )}
@@ -78,7 +96,7 @@ export function MessageComposer({ onSend, sending, placeholder = 'Message' }) {
             </Button>
           </div>
         </div>
-        <p className="mt-1 text-[11px] text-slate-400">
+        <p className="mt-1 text-[11px] text-ink-mute">
           Enter to send · Shift + Enter for a new line
         </p>
       </div>

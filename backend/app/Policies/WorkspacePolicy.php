@@ -35,4 +35,9 @@ class WorkspacePolicy
             ->whereIn('role', ['owner', 'admin'])
             ->exists();
     }
+
+    public function delete(User $user, Workspace $workspace): bool
+    {
+        return $workspace->owner_id === $user->id;
+    }
 }

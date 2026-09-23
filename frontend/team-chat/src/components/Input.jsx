@@ -12,7 +12,7 @@ export function Input({
       {label && (
         <label
           htmlFor={name}
-          className="text-sm font-medium text-slate-700"
+          className="text-sm font-medium text-ink-body"
         >
           {label}
         </label>
@@ -21,15 +21,15 @@ export function Input({
         id={name}
         name={name}
         type={type}
-        className={`w-full rounded border px-3 py-2 text-sm shadow-sm transition-colors focus:outline-none focus:ring-2 ${
+        className={`w-full rounded border bg-surface px-3 py-2 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-mute focus:outline-none focus:ring-2 ${
           error
             ? 'border-rose-400 focus:ring-rose-300'
-            : 'border-slate-300 focus:ring-accent focus:border-accent'
+            : 'border-line-strong focus:ring-accent focus:border-accent'
         } ${className}`}
         {...props}
       />
       {error && <p className="text-xs text-rose-600">{error}</p>}
-      {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
+      {hint && !error && <p className="text-xs text-ink-soft">{hint}</p>}
     </div>
   )
 }

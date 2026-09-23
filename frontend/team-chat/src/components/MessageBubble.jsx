@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Avatar } from './Avatar'
 import { EmojiPicker } from './EmojiPicker'
+import { useDecryptedMessage } from '../context/E2EEContext'
 import { displayName, formatBytes, formatMessageTime } from '../utils/format'
 
 function groupReactions(reactions = []) {
@@ -17,8 +18,8 @@ function groupReactions(reactions = []) {
 
 function AttachmentChip({ attachment }) {
   return (
-    <div className="mt-1 flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-2.5 py-2">
-      <svg className="h-5 w-5 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <div className="mt-1 flex items-center gap-2 rounded border border-line bg-surface-soft px-2.5 py-2">
+      <svg className="h-5 w-5 shrink-0 text-ink-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path
           d="M13.5 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5.5-5zM13 3v5h5"
           strokeLinecap="round"
@@ -26,10 +27,10 @@ function AttachmentChip({ attachment }) {
         />
       </svg>
       <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-slate-700">
+        <p className="truncate text-sm font-medium text-ink">
           {attachment.file_name}
         </p>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-ink-soft">
           {formatBytes(attachment.size)}
           {attachment.mime_type ? ` · ${attachment.mime_type}` : ''}
         </p>
@@ -48,30 +49,45 @@ export function MessageBubble({
   const [showPicker, setShowPicker] = useState(false)
   const isOwn = message.user_id === currentUserId
   const reactionGroups = groupReactions(message.reactions)
+  const { plain, failed } = useDecryptedMessage(message)
 
   return (
-    <div className="group flex gap-3 rounded px-2 py-1 hover:bg-slate-50">
+    <div className="group flex gap-3 rounded px-2 py-1 hover:bg-surface-mute">
       <Avatar user={message.user} size="md" className="mt-1" />
 
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <span className="font-bold text-slate-800">
+          <span className="font-bold text-ink">
             {displayName(message.user)}
           </span>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-ink-mute">
             {formatMessageTime(message.created_at)}
           </span>
           {message.parent_id && (
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+            <span className="rounded bg-surface-mute px-1.5 py-0.5 text-[10px] font-semibold text-ink-soft">
               reply
             </span>
           )}
         </div>
 
-        {message.body && (
-          <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-800">
-            {message.body}
-          </p>
+        {message.encrypted_body ? (
+          failed ? (
+            <p className="whitespace-pre-wrap break-words text-sm italic leading-relaxed text-ink-mute">
+              Message could not be decrypted
+            </p>
+          ) : (
+            plain && (
+              <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-ink-body">
+                {plain}
+              </p>
+            )
+          )
+        ) : (
+          message.body && (
+            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-ink-body">
+              {message.body}
+            </p>
+          )
         )}
 
         {message.attachments && message.attachments.length > 0 && (
@@ -91,8 +107,8 @@ export function MessageBubble({
                 onClick={() => onReact(emoji)}
                 className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors ${
                   reacted
-                    ? 'border-accent bg-accent/10 text-slate-700'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                    ? 'border-accent bg-accent/10 text-ink-body'
+                    : 'border-line bg-surface text-ink-soft hover:border-line-strong'
                 }`}
               >
                 <span>{emoji}</span>
@@ -107,7 +123,7 @@ export function MessageBubble({
             <button
               type="button"
               onClick={() => setShowPicker(true)}
-              className="rounded px-1.5 py-0.5 text-xs font-semibold text-slate-400 hover:bg-white hover:text-slate-700"
+              className="rounded px-1.5 py-0.5 text-xs font-semibold text-ink-mute hover:bg-surface hover:text-ink"
             >
               Add reaction
             </button>
@@ -116,7 +132,7 @@ export function MessageBubble({
             <button
               type="button"
               onClick={onOpenThread}
-              className="rounded px-1.5 py-0.5 text-xs font-semibold text-slate-400 hover:bg-white hover:text-slate-700"
+              className="rounded px-1.5 py-0.5 text-xs font-semibold text-ink-mute hover:bg-surface hover:text-ink"
             >
               {message.replies_count} {message.replies_count === 1 ? 'reply' : 'replies'}
             </button>
@@ -127,7 +143,7 @@ export function MessageBubble({
               onClick={() => {
                 if (window.confirm('Delete this message?')) onDelete()
               }}
-              className="rounded px-1.5 py-0.5 text-xs font-semibold text-slate-400 hover:bg-white hover:text-rose-600"
+              className="rounded px-1.5 py-0.5 text-xs font-semibold text-ink-mute hover:bg-surface hover:text-rose-600"
             >
               Delete
             </button>

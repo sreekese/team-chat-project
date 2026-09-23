@@ -18,7 +18,7 @@ export function EmojiPicker({ onSelect, onClose, className = '' }) {
   return (
     <div
       ref={ref}
-      className={`z-30 rounded-lg border border-slate-200 bg-white p-2 shadow-lg ${className}`}
+      className={`z-30 rounded-lg border border-line bg-surface p-2 shadow-lg ${className}`}
     >
       <div className="grid grid-cols-5 gap-1">
         {EMOJIS.map((emoji) => (
@@ -26,7 +26,7 @@ export function EmojiPicker({ onSelect, onClose, className = '' }) {
             key={emoji}
             type="button"
             onClick={() => onSelect(emoji)}
-            className="rounded p-1.5 text-xl transition-colors hover:bg-slate-100"
+            className="rounded p-1.5 text-xl transition-colors hover:bg-surface-mute"
           >
             {emoji}
           </button>
